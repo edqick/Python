@@ -1,12 +1,15 @@
 import json
 import csv
+from pachong.interfaceMysql import *
 '''
-解析炉石卡牌部分数据
-利用json文件的数据提取数据并保存进csv文件中
+》》》炉石卡牌《《《
+1.从原始文件中获取数据并解析出部分数据
+2.将数据保存进csv文件中
+3.从数据从CSV文件中取出
 '''
-class lushi():
-    cards_list = []
-    card_heraders = []
+class cardInfo():
+    cards_list = []#存放卡牌信息
+    card_heraders = []#存放头部字段
 
     def card_info_split(self):
         with open('F:\PycharmProjects\demo\pachong\cards.json',encoding='UTF-8') as f:
@@ -28,8 +31,9 @@ class lushi():
                     if len(info)<2:#去除不必要的元素
                         info.pop(0)
                     if len(info)==2:#去除字符串中的引号
-                        if len(info[1])<2:#排除不带引号的数字
+                        if info[0][1:-1]=='cost':#卡费单独取出
                             cards_info[info[0][1:-1]] = info[1]
+                            #print(info[0][1:-1]+' : '+info[1])
                         else:
                             cards_info[info[0][1:-1]] = info[1][1:-1]
 
@@ -50,13 +54,28 @@ class lushi():
             writer.writeheader()
             writer.writerows(self.cards_list)
 
+    def get_to_csv(self,filename):#从CSV文件中取出数据
+        ifm = interfaceMysql()
+        ifm.getConn('root', '123456', '127.0.0.1', 'lushi')
+        with open(filename,'r',newline='') as f:
+            rows = csv.reader(f)
+            for row in rows:
+                if row[0]=='0':
+                    continue
+                ifm.insertMysql('card_info',row)
+        ifm.closeConn()
 
-ls = lushi()
-headers = ls.card_heraders
-cards_list = ls.card_info_split()
+
+
+
+# ------------------------------------------------------------
+# ls = lushi()
+# headers = ls.card_heraders
+# cards_list = ls.card_info_split()
 #print(headers)
 #print(cards_list)
-#ls.write_to_csv('lushi_card2')
+#ls.write_to_csv('lushi_card3')
+# ------------------------------------------------------------
 
 
 
